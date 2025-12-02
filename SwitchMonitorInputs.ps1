@@ -110,16 +110,16 @@ function Switch-MonitorBetweenAllInputs {
 # PS C:\controlmymonitor> Get-Monitor
 # LogicalDisplay FriendlyName        InstanceName
 # -------------- ------------        ------------
-# \\.\DISPLAY10  Generic PnP Monitor DISPLAY\DELD107\5&2c99ba1c&2&UID256
-# \\.\DISPLAY11  Generic PnP Monitor DISPLAY\AOC3201\5&2c99ba1c&2&UID260
-# \\.\DISPLAY16  Generic PnP Monitor DISPLAY\GBT3209\7&31c0062b&0&UID516
-# \\.\DISPLAY17  Generic PnP Monitor DISPLAY\DELD107\7&31c0062b&0&UID512
+# \\.\DISPLAY0  Generic PnP Monitor DISPLAY\DELD107\5&2c99ba1c&2&UID256
+# \\.\DISPLAY1  Generic PnP Monitor DISPLAY\AOC3201\5&2c99ba1c&2&UID260
+# \\.\DISPLAY6  Generic PnP Monitor DISPLAY\GBT3209\7&31c0062b&0&UID516
+# \\.\DISPLAY7  Generic PnP Monitor DISPLAY\DELD107\7&31c0062b&0&UID512
 # param block moved to top of script
 
 # Map friendly names to instance names
 $monitorMap = @{
-    'monitor1' = 'DISPLAY\DELD107\7&31c0062b&0&UID512'
-    'monitor2' = 'DISPLAY\GBT3209\7&31c0062b&0&UID516'
+    'monitor1' = 'DISPLAY\DELD107\7&31c0062b&0&UID516'
+    'monitor2' = 'DISPLAY\GBT3209\7&31c0062b&0&UID512'
     'monitor3' = 'DISPLAY\DELD107\5&2c99ba1c&2&UID256'
     'monitor4' = 'DISPLAY\AOC3201\5&2c99ba1c&2&UID260'
 }
