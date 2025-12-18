@@ -118,10 +118,10 @@ function Switch-MonitorBetweenAllInputs {
 
 # Map friendly names to instance names
 $monitorMap = @{
-    'monitor1' = 'DISPLAY\DELD107\7&31c0062b&0&UID516'
-    'monitor2' = 'DISPLAY\GBT3209\7&31c0062b&0&UID512'
-    'monitor3' = 'DISPLAY\DELD107\5&2c99ba1c&2&UID256'
-    'monitor4' = 'DISPLAY\AOC3201\5&2c99ba1c&2&UID260'
+    'monitor1' = 'DISPLAY\DELD107\7&1638f3cd&1&UID516'
+    'monitor2' = 'DISPLAY\GBT3209\7&1638f3cd&1&UID512'
+    'monitor3' = 'DISPLAY\DELD107\7&1638f3cd&1&UID520'
+    'monitor4' = 'DISPLAY\AOC3201\5&2c99ba1c&4&UID260'
 }
 
 if ($MonitorArg -and $monitorMap.ContainsKey($MonitorArg.ToLower())) {
