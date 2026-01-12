@@ -52,7 +52,7 @@ function Switch-MonitorDPHDMI1 {
     Write-Host "Monitor input switched successfully." -ForegroundColor Green
 }
 
-function Switch-MonitorBetweenAllInputs {
+function Switch-MonitorInputCycle {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory=$true)]
@@ -60,52 +60,42 @@ function Switch-MonitorBetweenAllInputs {
     )
 
     $vcpCode = 0x60
-    $inputValues = @{
-        15 = 'DP'
-        17 = 'HDMI1'
-        18 = 'HDMI2'
-    }
+    # Common MCCS VCP values: DP=15 (0x0F), HDMI1=17 (0x11), HDMI2=18 (0x12)
+    # Note: Some monitors use 16 for HDMI1; check your specific hardware if 17 fails.
 
-    Write-Host "Searching for monitor with instance name: $MonitorInstanceName"
     $monitor = Get-Monitor | Where-Object { $_.InstanceName -eq $MonitorInstanceName }
 
     if (-not $monitor) {
-        Write-Host "Error: Monitor not found with instance name: $MonitorInstanceName" -ForegroundColor Red
+        Write-Host "Error: Monitor not found: $MonitorInstanceName" -ForegroundColor Red
         return
     }
 
+    # Dell monitors often report values with a 3840 (0x0F00) offset
     $monitor_modifier = if ($monitor.InstanceName -like "*DEL*") { 3840 } else { 0 }
 
     $currentInput = Get-MonitorVCPResponse -Monitor $monitor -VCPCode $vcpCode
-    $currentInputValue = [int]$currentInput.CurrentValue
-    if ($monitor_modifier -ne 0) {
-        $currentInputValue = $currentInputValue - $monitor_modifier
-    }
+    $currentValue = [int]$currentInput.CurrentValue - $monitor_modifier
 
-    if ($inputValues.ContainsKey($currentInputValue)) {
-        Write-Host "Current input : $($inputValues[$currentInputValue]) -- Value: $currentInputValue"
+    # Define the Cycle: DP (15) -> HDMI1 (17) -> HDMI2 (18) -> DP (15)
+    if ($currentValue -eq 15) {
+        $nextInput = 17
+        $msg = "DP to HDMI1"
+    } elseif ($currentValue -eq 17 -or $currentValue -eq 16) {
+        $nextInput = 18
+        $msg = "HDMI to HDMI2"
     } else {
-        Write-Host "Current input : Unknown -- Value: $currentInputValue" -ForegroundColor Yellow
+        # Default or fallback from HDMI2 back to DP
+        $nextInput = 15
+        $msg = "Back to DP"
     }
 
-    $currentInputKey = $currentInputValue
-    $inputKeys = $inputValues.Keys | Sort-Object
-
-    # use .NET Array IndexOf for arrays
-    $currentIndex = [array]::IndexOf($inputKeys, $currentInputKey)
-    if ($currentIndex -lt 0) {
-        Write-Host "Current input not in configured input list. No action taken." -ForegroundColor Yellow
-        return
-    }
-
-    $nextIndex = ($currentIndex + 1) % $inputKeys.Count
-    $nextInputKey = $inputKeys[$nextIndex]
-    $nextInput = $nextInputKey
-
-    Write-Host "Cycling input: $currentInputKey -> $nextInputKey"
+    Write-Host "Current (Adjusted): $currentValue | Switching: $msg" -ForegroundColor Cyan
+    
+    # Apply the new value
     Get-Monitor -DeviceName $monitor.LogicalDisplay | Set-MonitorVCPValue -VCPCode $vcpCode -Value $nextInput
-    Write-Host "Monitor input switched successfully." -ForegroundColor Green
+    Write-Host "Successfully switched to value $nextInput" -ForegroundColor Green
 }
+
 
 # PS C:\controlmymonitor> Get-Monitor
 # LogicalDisplay FriendlyName        InstanceName
@@ -131,7 +121,8 @@ if ($MonitorArg -and $monitorMap.ContainsKey($MonitorArg.ToLower())) {
 }
 
 if ($resolvedInstanceName) {
-    Switch-MonitorDPHDMI1 -MonitorInstanceName $resolvedInstanceName
+    Switch-MonitorInputCycle  -MonitorInstanceName $resolvedInstanceName
+#    Switch-MonitorDPHDMI1 -MonitorInstanceName $resolvedInstanceName
 } else {
     Write-Host "No monitor argument provided or monitor not found in map." -ForegroundColor Red
 }
