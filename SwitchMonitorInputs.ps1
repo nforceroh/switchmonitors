@@ -80,9 +80,12 @@ function Switch-MonitorInputCycle {
     if ($currentValue -eq 15) {
         $nextInput = 17
         $msg = "DP to HDMI1"
-    } elseif ($currentValue -eq 17 -or $currentValue -eq 16) {
+    } elseif ($currentValue -eq 17 ) {
         $nextInput = 18
         $msg = "HDMI to HDMI2"
+    } elseif ($currentValue -eq 16) {
+        $nextInput = 15
+        $msg = "HDMI2 to DP" 
     } else {
         # Default or fallback from HDMI2 back to DP
         $nextInput = 15
