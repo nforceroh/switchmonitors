@@ -1,6 +1,7 @@
 
 param (
-    [string]$MonitorArg
+    [string]$MonitorArg,
+    [string]$Action = "Cycle"  # Options: "Cycle" or "DP, HDMI1, HDMI2"
 )
 
 function Switch-MonitorDPHDMI1 {
@@ -124,8 +125,35 @@ if ($MonitorArg -and $monitorMap.ContainsKey($MonitorArg.ToLower())) {
 }
 
 if ($resolvedInstanceName) {
-    Switch-MonitorInputCycle  -MonitorInstanceName $resolvedInstanceName
-#    Switch-MonitorDPHDMI1 -MonitorInstanceName $resolvedInstanceName
+    $actionNormalized = if ($Action) { $Action.ToString().Trim().ToUpper() } else { 'CYCLE' }
+
+    if ($actionNormalized -eq 'CYCLE') {
+        Switch-MonitorInputCycle -MonitorInstanceName $resolvedInstanceName
+    } else {
+        switch ($actionNormalized) {
+            'DP'    { $targetInput = 15 }
+            'HDMI1' { $targetInput = 17 }
+            'HDMI2' { $targetInput = 18 }
+            Default {
+                Write-Host "Unknown Action: '$Action'. Use 'Cycle', 'DP', 'HDMI1' or 'HDMI2'." -ForegroundColor Yellow
+                return
+            }
+        }
+
+        # Resolve monitor object and apply monitor-specific modifier if needed
+        $monitor = Get-Monitor | Where-Object { $_.InstanceName -eq $resolvedInstanceName }
+        if (-not $monitor) {
+            Write-Host "Error: Monitor not found: $resolvedInstanceName" -ForegroundColor Red
+            return
+        }
+
+        $monitor_modifier = if ($monitor.InstanceName -like "*DEL*") { 3840 } else { 0 }
+        $valueToSet = $targetInput + $monitor_modifier
+
+        Write-Host "Setting monitor input to $Action (value $valueToSet) on $resolvedInstanceName" -ForegroundColor Cyan
+        Get-Monitor -DeviceName $monitor.LogicalDisplay | Set-MonitorVCPValue -VCPCode 0x60 -Value $valueToSet
+        Write-Host "Switched monitor input to $Action" -ForegroundColor Green
+    }
 } else {
     Write-Host "No monitor argument provided or monitor not found in map." -ForegroundColor Red
 }
