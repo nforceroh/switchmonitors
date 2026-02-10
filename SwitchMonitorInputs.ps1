@@ -1,7 +1,7 @@
 
 param (
-    [string]$MonitorArg,
-    [string]$Action = "Cycle"  # Options: "Cycle" or "DP, HDMI1, HDMI2"
+    [string]$MonitorArg="monitor2",  # Can be friendly name (monitor1, monitor2, etc.) or full instance name
+    [string]$Action = "DP"  # Options: "Cycle" or "DP, HDMI1, HDMI2"
 )
 
 function Switch-MonitorDPHDMI1 {
@@ -117,6 +117,7 @@ $monitorMap = @{
     'monitor3' = 'DISPLAY\DELD107\7&1638f3cd&2&UID776'
     'monitor4' = 'DISPLAY\AOC3201\7&1638f3cd&2&UID780'
 }
+
 
 if ($MonitorArg -and $monitorMap.ContainsKey($MonitorArg.ToLower())) {
     $resolvedInstanceName = $monitorMap[$MonitorArg.ToLower()]
