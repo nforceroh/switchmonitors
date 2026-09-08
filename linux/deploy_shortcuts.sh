@@ -3,6 +3,7 @@ set -e
 
 APP_DIR="$HOME/.local/share/applications"
 SWITCH_SCRIPT="$HOME/repositories/switchmonitors/linux/switch_inputs.sh"
+AUDIO_SCRIPT="$HOME/repositories/switchmonitors/linux/toggle_audio.sh"
 mkdir -p "$APP_DIR"
 
 # Define the 3x3 Monitor Control Matrix: id -> "Printable Name|args|shortcut"
@@ -40,6 +41,20 @@ EOF
     chmod +x "$APP_DIR/switch_${id}.desktop"
 done
 
+cat <<EOF > "$APP_DIR/toggle_audio.desktop"
+[Desktop Entry]
+Type=Application
+Name=Audio SW
+Exec=bash -c "${AUDIO_SCRIPT}"
+Terminal=false
+Icon=audio-card
+Categories=Utility;
+NoDisplay=true
+StartupNotify=false
+X-KDE-GlobalAccel-CommandShortcut=true
+EOF
+chmod +x "$APP_DIR/toggle_audio.desktop"
+
 update-desktop-database "$APP_DIR"
 
 echo "⌨️  Registering shortcuts in ~/.config/kglobalshortcutsrc..."
@@ -55,6 +70,10 @@ for id in "${!script_matrix[@]}"; do
         --group "services" --group "switch_${id}.desktop" \
         --key "_launch" "${shortcut}"
 done
+
+kwriteconfig6 --file kglobalshortcutsrc \
+    --group "services" --group "toggle_audio.desktop" \
+    --key "_launch" "Ctrl+Alt+Shift+F11"
 
 echo "🔄 Restarting kglobalaccel6..."
 kquitapp6 kglobalaccel6 2>/dev/null || true
